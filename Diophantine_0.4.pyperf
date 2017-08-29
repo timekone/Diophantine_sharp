@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ProfilingTarget xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <StandaloneTarget>
+    <PythonInterpreter>
+      <Id>2af0f10d-7135-4994-9156-5d01c9c11b7e</Id>
+      <Version>3.4</Version>
+    </PythonInterpreter>
+    <WorkingDirectory>C:\Users\TimeKillerOne\Documents\PyProjects</WorkingDirectory>
+    <Script>C:\Users\TimeKillerOne\Documents\PyProjects\Diophantine_0.4.py</Script>
+    <Arguments />
+  </StandaloneTarget>
+  <Reports>
+    <Report>
+      <Filename>C:\Users\TimeKillerOne\AppData\Local\Temp\Diophantine_0.4_20170618.vsp</Filename>
+    </Report>
+  </Reports>
+</ProfilingTarget>
