@@ -6,7 +6,7 @@ using System.Security.Policy;
 using System.Text;
 using System.IO;
 
-namespace Diophantine_sharp
+namespace Diophantine_sharp //git test
 {
     public class Program
     {
