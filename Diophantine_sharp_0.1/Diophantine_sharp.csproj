@@ -67,6 +67,7 @@
     <Content Include="input.txt" />
     <Content Include="input25x41.txt" />
     <Content Include="input40x61%2810x30%29.txt" />
+    <Content Include="output.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

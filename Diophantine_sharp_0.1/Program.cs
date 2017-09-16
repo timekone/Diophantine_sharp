@@ -378,6 +378,7 @@ namespace Diophantine_sharp
 
         public static void Main(string[] args)
         {
+            string project_root = Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory()));
             string path_old = @"input(old).txt";
             string path_small = @"input.txt";
             string path_medium = @"input25x41.txt";
@@ -386,7 +387,7 @@ namespace Diophantine_sharp
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            List<int[]> x = Work(path_medium);
+            List<int[]> x = Work(project_root + "\\" + path_small);
 
             sw.Stop();
             WriteToFile(x);
@@ -394,7 +395,7 @@ namespace Diophantine_sharp
             Console.WriteLine();
             Console.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());
             using (System.IO.StreamWriter file =
-            new System.IO.StreamWriter(@"output.txt", true))
+            new System.IO.StreamWriter(project_root + @"\output.txt", true)) // writes only elapsed wtime, not a solution
             {
                 file.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());
             }
