@@ -75,31 +75,53 @@ namespace Diophantine_sharp
         static List<int[]> redundant(List<int[]> ar)
         {
             List<int[]> ar2 = new List<int[]>();
+            UInt64[][] decar = new UInt64[ar.Count][];
 
-            foreach (int[] y in ar)
+            for (int y = 0; y<ar.Count; y++)
             {
-                bool r2 = true; // do we need y
-                foreach (int[] k in ar)
+                int lenght = Convert.ToInt32(Math.Ceiling(ar[0].Length / 64.0));
+                List<string> binstr = new List<string>();
+                for (int i=0; i < lenght; i ++)
                 {
-                    bool r = true; // is y redundant comparing to k
-                    for (int i = 0; i < y.Length; i++)
+                    string stringToAdd = "";
+                    for (int j=0; j<64; j++)
                     {
-                        if (y[i] == 0 && k[i] != 0)
+                        int index = i * 64 + j;
+                        if (ar[y].Length > index &&  ar[y][index] != 0) { stringToAdd += "1"; }
+                                            else { stringToAdd += "0"; }
+                    }
+                    binstr.Add(stringToAdd);
+                }
+
+                UInt64[] decarToAdd = new UInt64[lenght];
+                for(int i=0; i<lenght; i++)
+                {
+                    decarToAdd[i] = Convert.ToUInt64(binstr[i], 2);
+                }
+                decar[y] = decarToAdd;
+            }
+
+            for (int j=0; j < ar.Count; j++)
+            {
+                bool r = true;
+                for (int k = 0; k < ar.Count; k++)
+                {
+                    if (j != k)
+                    {
+                        for (int n = 0; n<decar[j].Length && r==true; n++)
                         {
-                            r = false;
-                            break;
+                            UInt64 an = decar[j][n] & decar[k][n];
+                            if (an == decar[k][n])
+                            {
+                                r = false;
+                                break;
+                            }
                         }
                     }
-                    if (r && y != k)
-                    {
-                        r2 = false;
-                        break;
-                    }
-
                 }
-                if (r2)
+                if (r)
                 {
-                    ar2.Add(y);
+                    ar2.Add(ar[j]);
                 }
             }
             return ar2;
@@ -151,7 +173,7 @@ namespace Diophantine_sharp
             {
                 int[] y2 = y;
                 int d = Reduce(GCD, y, 0);
-                if (d != 1)
+                if (d!=0 && d != 1)
                 {
                     y2 = Map<int, int>(z => z / d, y).ToArray();
                 }
@@ -397,6 +419,14 @@ namespace Diophantine_sharp
             using (System.IO.StreamWriter file =
             new System.IO.StreamWriter(project_root + @"\output.txt", true)) // writes only elapsed wtime, not a solution
             {
+                foreach (var i in x)
+                {
+                    foreach (var a in i)
+                    {
+                        file.Write(a + ", ");
+                    }
+                    file.WriteLine();
+                }
                 file.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());
             }
             Console.ReadKey();
