@@ -206,7 +206,7 @@ namespace Diophantine_sharp
                 if (ar[i][i] == 0)
                 {
                     int t = 0;
-                    while ((i + t + 1 < ar.Count) && (ar[i + 1][i] == 0))  // search for line with not a zero in i column
+                    while ((i + t + 1 < ar.Count) && (ar[i + t][i] == 0))  // search for line with not a zero in i column
                     {
                         t += 1;
                     }
