@@ -225,7 +225,7 @@ namespace Diophantine_sharp
                         int[] newj = new int[ar[j].Length];
                         for (int k = 0; k < ar[i].Length; k++)//no map this time
                         {
-                            newj[k] = ar[j][k] * ar[i][i] - ar[i][k] * ar[j][i];
+                            newj[k] = checked(ar[j][k] * ar[i][i] - ar[i][k] * ar[j][i]);
                         }
                         ar[j] = newj;
                     }
@@ -242,9 +242,8 @@ namespace Diophantine_sharp
                         ar[j] = newj;
                     }
                 }
-
+                ar = siplify(ar);
             }
-            ar = siplify(ar);
         }
 
         public static List<int[]> Read_input(string path)
@@ -409,7 +408,7 @@ namespace Diophantine_sharp
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            List<int[]> x = Work(project_root + "\\" + path_small);
+            List<int[]> x = Work(project_root + "\\" + path_medium);
 
             sw.Stop();
             WriteToFile(x);
