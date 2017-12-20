@@ -63,6 +63,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="generated.txt" />
     <Content Include="input%28old%29.txt" />
     <Content Include="input.txt" />
     <Content Include="input25x41.txt" />

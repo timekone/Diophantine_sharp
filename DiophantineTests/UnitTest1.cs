@@ -47,7 +47,7 @@ namespace DiophantineTests
         [TestMethod]
         public void TestOldInput()
         {
-            string path_old = @"C:\Users\TimeKillerOne\Documents\Visual Studio 2015\Projects\Diophantine_sharp_0.1\Diophantine_sharp_0.1\input(old).txt";
+            string path_old = @"C:\Users\dmitr\Source\Repos\Diophantine_sharp\Diophantine_sharp_0.1\input(old).txt";
 
             List<int[]> x = Program.Work(path_old);
 
@@ -70,7 +70,7 @@ namespace DiophantineTests
         [TestMethod]
         public void TestSmallInput()
         {
-            string path_small = @"C:\Users\TimeKillerOne\Documents\Visual Studio 2015\Projects\Diophantine_sharp_0.1\Diophantine_sharp_0.1\input.txt";
+            string path_small = @"C:\Users\dmitr\Source\Repos\Diophantine_sharp\Diophantine_sharp_0.1\input.txt";
 
             List<int[]> x = Program.Work(path_small);
 

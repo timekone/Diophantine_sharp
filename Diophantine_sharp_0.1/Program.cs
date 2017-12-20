@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -10,7 +11,7 @@ namespace Diophantine_sharp
 {
     public class Program
     {
-        static void write_arr(int[] arr)
+        static void write_arr(int[] arr)  //printing array to console with commas
         {
             foreach (var a in arr)
             {
@@ -18,7 +19,7 @@ namespace Diophantine_sharp
             }
             Console.WriteLine();
         }
-        static T Reduce<T, U>(Func<U, T, T> func, IEnumerable<U> list, T acc)
+        static T Reduce<T, U>(Func<U, T, T> func, IEnumerable<U> list, T acc)  //applies function cumulatively to the items of list
         {
             foreach (var i in list)
                 acc = func(i, acc);
@@ -26,25 +27,15 @@ namespace Diophantine_sharp
             return acc;
         }
 
-        static IEnumerable<TResult> Map<T, TResult>(Func<T, TResult> func, IEnumerable<T> list)
+        static IEnumerable<TResult> Map<T, TResult>(Func<T, TResult> func, IEnumerable<T> list)  //return an iterator that applies function to every item of iterable, yielding the results
         {
             foreach (var i in list)
                 yield return func(i);
         }
 
-        static int[] plus(int[] arr1, int[] arr2)
+        static int[] Min_m(List<int[]> arr)  //Choose equation with min m=k*l+r where k - number of positive coefficients, l - negative, r - zeroes
         {
-            int[] r = new int[arr1.Length];
-            for (int i = 0; i < r.Length; i++)
-            {
-                r[i] = arr1[i] + arr2[i];
-            }
-            return r;
-        }
-
-        static int[] Min_m(List<int[]> arr)
-        {
-            List<int> m_arr = new List<int>();
+            List<int> m_arr = new List<int>();  //list with values of m for each equation
             foreach (var vec in arr)
             {
                 int k = 0;
@@ -61,10 +52,10 @@ namespace Diophantine_sharp
                 }
                 m_arr.Add(k * l + r);
             }
-            return arr[m_arr.IndexOf(m_arr.Min())];
+            return arr[m_arr.IndexOf(m_arr.Min())];  //index of min m equals to index of its equation
         }
 
-        static int GCD(int a, int b)
+        static int GCD(int a, int b)  //Greatest Common Divisor
         {
             if (b == 0)
                 return a;
@@ -72,47 +63,14 @@ namespace Diophantine_sharp
                 return GCD(b, a % b);
         }
 
-        static List<int[]> redundant(List<int[]> ar)
+        static List<int[]> redundant2(List<int[]> ar, int len_input_arr)  //delete redundant vectors
         {
-            List<int[]> ar2 = new List<int[]>();
-
-            foreach (int[] y in ar)
-            {
-                bool r2 = true; // do we need y
-                foreach (int[] k in ar)
-                {
-                    bool r = true; // is y redundant comparing to k
-                    for (int i = 0; i < y.Length; i++)
-                    {
-                        if (y[i] == 0 && k[i] != 0)
-                        {
-                            r = false;
-                            break;
-                        }
-                    }
-                    if (r && y != k)
-                    {
-                        r2 = false;
-                        break;
-                    }
-
-                }
-                if (r2)
-                {
-                    ar2.Add(y);
-                }
-            }
-            return ar2;
-        }
-
-        static List<int[]> redundant2(List<int[]> ar, int len_input_arr)
-        {
-            List<int[]> ar2 = new List<int[]>();
+            List<int[]> ar2 = new List<int[]>();  //for storing halfway solutions
             List<string> strings = new List<string>();
-            for (int j = 0; j < ar.Count; j++)
+            for (int j = 0; j < ar.Count; j++)  //searching for vectors with number of zero coordinates greater then number of vectors
             {
-                int zcounter = 0;
-                string s = "";
+                int zcounter = 0;  //number of zero coordinates in a single vector
+                string s = "";  //binary representation of vector
                 for (int i = 0; i < ar[j].Length; i++)
                 {
                     if (ar[j][i] == 0)
@@ -128,45 +86,73 @@ namespace Diophantine_sharp
                 if (zcounter > len_input_arr)
                 {
                     ar2.Add(ar[j]);
-                    strings.Add(s);
+                    strings.Add(s);  //saving binary representation for later
                 }
             }
             List<int[]> ar3 = new List<int[]>();
             List<string> strings2 = new List<string>();
             for (int j = 0; j < ar2.Count; j++)
             {
-                if (!strings2.Contains(strings[j]))
+                if (!strings2.Contains(strings[j]))  //eliminating vectors without unique bin. representation
                 {
                     ar3.Add(ar2[j]);
                     strings2.Add(strings[j]);
                 }
             }
-            return ar3;
-        }
 
-        static List<int[]> siplify(List<int[]> ar)
-        {
-            List<int[]> ar2 = new List<int[]>() { };
-            foreach (int[] y in ar)
+            //redundant with bool optimisation(old redundant)
+            UInt64[] decimal_ar = new UInt64[strings2.Count];
+            for (int i = 0; i < strings2.Count; i++)
             {
-                int[] y2 = y;
-                int d = Reduce(GCD, y, 0);
-                if (d != 1)
+                decimal_ar[i] = Convert.ToUInt64(strings2[i], 2);  //translating binary representation to decimal
+            }
+            ar2.Clear();  //reusing ar2 to save memory
+            for (int j = 0; j < ar3.Count; j++)
+            {
+                bool r = true;  //do we need ar[j]
+                for (int k = 0; k < ar3.Count; k++)
                 {
-                    y2 = Map<int, int>(z => z / d, y).ToArray();
+                    if (j != k)  //are these different vectors
+                    {
+                        UInt64 an = decimal_ar[j] & decimal_ar[k];  //AND between binary representations of vec
+                        if (an == decimal_ar[k]) //if [j] has 1's where [k] has 0's, e.g. [j] redundant to [k]
+                        {
+                            r = false;
+                            break;
+                        }
+                    }
                 }
-                ar2.Add(y2);
+                if (r)
+                {
+                    ar2.Add(ar3[j]);
+                }
             }
             return ar2;
         }
 
-        static int[][] set_basis(int[] arr)
+        static List<int[]> simplify(List<int[]> ar)  //simplifying vectors of matrix
+        {
+            List<int[]> ar2 = new List<int[]>() { };  //for storing result
+            foreach (int[] y in ar)
+            {
+                int[] y2 = y;
+                int d = Reduce(GCD, y, 0);  //searching for greatest common divisor
+                if (d!=0 && d != 1)
+                {
+                    y2 = Map<int, int>(z => z / d, y).ToArray();  //dividing by GCD
+                }
+                ar2.Add(y2);  //append to answer
+            }
+            return ar2;
+        }
+
+        static int[][] set_basis(int[] arr)  //creating canonical basis matrix
         {
             int[][] basis = new int[arr.Length][];
             for (int p = 0; p < arr.Length; p++)
             {
                 basis[p] = new int[arr.Length];
-                for (int o = 0; o < arr.Length; o++)
+                for (int o = 0; o < arr.Length; o++)  //putting 1's on diagonal
                 {
                     if (p == o)
                         basis[p][o] = 1;
@@ -177,18 +163,18 @@ namespace Diophantine_sharp
             return basis;
         }
 
-        public static void Diagonalize(List<int[]> ar)
+        public static void Diagonalize(List<int[]> ar)  //diagonalize input matrix
         {
             for (int i = 0; i < ar.Count; i++)
             {
                 if (ar[i][i] == 0)
                 {
                     int t = 0;
-                    while ((i + t + 1 < ar.Count) && (ar[i + 1][i] == 0))  // search for line with not a zero in i column
+                    while ((i + t + 1 < ar.Count) && (ar[i + t][i] == 0))  // search for line with not a zero in i column
                     {
                         t += 1;
                     }
-                    int[] c = ar[i];
+                    int[] c = ar[i];  //switch places
                     ar[i] = ar[i + t];
                     ar[i + t] = c;
                     if (ar[i][i] == 0)
@@ -196,14 +182,15 @@ namespace Diophantine_sharp
                         break;
                     }
                 }
+                //subtract vectors
                 for (int j = 0; j < i; j++)
                 {
                     if (ar[j][i] != 0)
                     {
                         int[] newj = new int[ar[j].Length];
-                        for (int k = 0; k < ar[i].Length; k++)//no map this time
+                        for (int k = 0; k < ar[i].Length; k++)
                         {
-                            newj[k] = ar[j][k] * ar[i][i] - ar[i][k] * ar[j][i];
+                            newj[k] = checked(ar[j][k] * ar[i][i] - ar[i][k] * ar[j][i]);
                         }
                         ar[j] = newj;
                     }
@@ -220,12 +207,11 @@ namespace Diophantine_sharp
                         ar[j] = newj;
                     }
                 }
-
+                ar = simplify(ar);
             }
-            ar = siplify(ar);
         }
 
-        public static List<int[]> Read_input(string path)
+        public static List<int[]> Read_input(string path)  //read input matrix
         {
             string[] str_input = File.ReadAllLines(path);
             List<int[]> retlist = new List<int[]>();
@@ -242,7 +228,7 @@ namespace Diophantine_sharp
             return retlist;
         }
 
-        static void WriteToFile(List<int[]> x)
+        static void WriteToFile(List<int[]> x)  //write answer
         {
             using (System.IO.StreamWriter file =
             new System.IO.StreamWriter(@"output.txt"))
@@ -258,39 +244,18 @@ namespace Diophantine_sharp
             }
         }
 
-        public static List<int[]> Work(string path)
+        public static List<int[]> Work(string path)  //primary function
         {
             List<int[]> input_arr = Read_input(path);
-            //Console.WriteLine(input_arr);
-            //List<int[]> input_arr = new List<int[]>()
-            //{
-            //    new int[]{2, -1, 3, 1, -4, 2},
-            //    new int[]{1, 0, -2, -3, 2, 1},
-            //    new int[]{-3, 1, 1, 0, -1, 2},
-            //    new int[]{4, 1, -1, -2, 0, 1}
-            //};
-
-            Diagonalize(input_arr);
-
-            int[] f_arr = Min_m(input_arr);
+            Diagonalize(input_arr);  //diagonalize input matrix
+            int[] f_arr = Min_m(input_arr);  //choosing equation with min m
             input_arr.Remove(f_arr);
-            int[][] basis = set_basis(f_arr);
-
-            //#region Maybe_it_doesn't_need
-            //int[] f_arr = new int[basis.GetLength(0)];
-            //for (int e = 0; e < basis.GetLength(0); e++) //f_arr=cur_eq;
-            //{
-            //    f_arr[e] = basis[e][e] * cur_eq[e];
-            //}
-            //#endregion
-            List<int[]> x = new List<int[]>() { };
-            //write_arr(f_arr);
-            //f_arr.ToList<int>().ForEach(i => Console.Write(i + " "));
-            //Console.WriteLine();
+            int[][] basis = set_basis(f_arr);  //setting canon basis for given equation
+             List <int[]> x = new List<int[]>() { };  //for storing answer
 
 
-            /*if value of eq is zero, add corresponding basis vector to answer
-            otherwise for every pair of ei and ej, add y = -L(ei)*ej + L(ej)*ei, where ej - basis for which L>0, ei - for which L<0 */
+                /*if value of eq is zero, add corresponding basis vector to answer
+                otherwise for every pair of ei and ej, add y = -L(ei)*ej + L(ej)*ei, where ej - basis for which L>0, ei - for which L<0 */
             for (int i = 0; i < f_arr.Length; i++)
             {
                 if (f_arr[i] == 0)
@@ -305,25 +270,23 @@ namespace Diophantine_sharp
                         {
                             int[] arr1 = Map<int, int>(z => -f_arr[i] * z, basis[j]).ToArray();
                             int[] arr2 = Map<int, int>(z => f_arr[j] * z, basis[i]).ToArray();
-                            int[] y = plus(arr1, arr2);
-                            int d = Reduce<int, int>(GCD, y, 0);
-                            if (d != 1)
-                                y = Map<int, int>(z => z / d, y).ToArray();
+                            int[] y = arr1.Zip(arr2, (o, p) => o + p).ToArray();
+                            int d = Reduce<int, int>(GCD, y, 0);  //find greatest common divider of vector..
+                            if (d != 1)  //# and if it is not 1..
+                                y = Map<int, int>(z => z / d, y).ToArray();  //simplify vector
                             x.Add(y);
                         }
                     }
                 }
             }
-
-            //x.ForEach(i => write_arr(i));
-
+            
             while (input_arr.Count > 0)
             {
                 List<int[]> f_arr2 = new List<int[]>() { };
-                foreach (int[] e in input_arr)
+                foreach (int[] e in input_arr)  //for each equation left..
                 {
                     List<int> fn = new List<int>() { };
-                    foreach (int[] xn in x)
+                    foreach (int[] xn in x)  //substitute every answer vector
                     {
                         int fx = 0;
                         for (int a = 0; a < xn.Length; a++)
@@ -334,15 +297,15 @@ namespace Diophantine_sharp
                     }
                     f_arr2.Add(fn.ToArray());
                 }
-                int[] cur_eq2 = Min_m(f_arr2);
+                int[] cur_eq2 = Min_m(f_arr2);  //choose equation with min m=k*l+r on f_arr2 values
                 input_arr.RemoveAt(f_arr2.IndexOf(cur_eq2));
                 Console.WriteLine("{0} {1}", cur_eq2.Length, input_arr.Count);
                 List<int[]> x2 = new List<int[]>() { };
-                for (int i = 0; i < cur_eq2.Length; i++)
+                for (int i = 0; i < cur_eq2.Length; i++) //searching for TSS - solutions
                 {
-                    if (cur_eq2[i] == 0)
+                    if (cur_eq2[i] == 0)  //if zero just add to solutions
                         x2.Add(x[i]);
-                    else if (cur_eq2[i] < 0)
+                    else if (cur_eq2[i] < 0)  //otherwise combining positive with negative
                     {
                         for (int j = 0; j < cur_eq2.Length; j++)
                         {
@@ -351,7 +314,7 @@ namespace Diophantine_sharp
 
                                 int[] arr1 = Map<int, int>(t => -cur_eq2[i] * t, x[j]).ToArray();
                                 int[] arr2 = Map<int, int>(t => cur_eq2[j] * t, x[i]).ToArray();
-                                int[] y = plus(arr1, arr2);
+                                int[] y = arr1.Zip(arr2, (o, p) => o + p).ToArray();
                                 x2.Add(y);
                             }
                         }
@@ -359,18 +322,12 @@ namespace Diophantine_sharp
                 }
                 
                 //test
-                Console.WriteLine(x2.Count); 
-                Console.WriteLine("start r2");
+                Console.WriteLine(x2.Count); //length before elimination of redundant vectors
+                Console.WriteLine("start r2"); 
                 x2 = redundant2(x2, input_arr.Count);
-                Console.WriteLine(x2.Count);
-                Console.WriteLine("start r");
-                x2 = redundant(x2);
-                Console.WriteLine("finish r");
-                Console.WriteLine(x2.Count);
-                x2 = siplify(x2);
-
-                //x2.ForEach(i => write_arr(i));
-                //Console.WriteLine();
+                Console.WriteLine("finish r2");
+                Console.WriteLine(x2.Count);  //after elimination
+                x2 = simplify(x2);
                 x = x2;
             }
             return x;
@@ -387,16 +344,24 @@ namespace Diophantine_sharp
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            List<int[]> x = Work(project_root + "\\" + path_small);
+            List<int[]> x = Work(project_root + "\\" + "input(old).txt");
 
             sw.Stop();
             WriteToFile(x);
-            x.ForEach(i => write_arr(i));
+            x.ForEach(i => write_arr(i));  //writing each TSS-solution to console
             Console.WriteLine();
-            Console.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());
+            Console.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());  //write time
             using (System.IO.StreamWriter file =
             new System.IO.StreamWriter(project_root + @"\output.txt", true)) // writes only elapsed wtime, not a solution
             {
+                foreach (var i in x)
+                {
+                    foreach (var a in i)
+                    {
+                        file.Write(a + ", ");
+                    }
+                    file.WriteLine();
+                }
                 file.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());
             }
             Console.ReadKey();
