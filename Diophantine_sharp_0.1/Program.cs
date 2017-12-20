@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -62,69 +63,14 @@ namespace Diophantine_sharp
                 return GCD(b, a % b);
         }
 
-        static List<int[]> redundant(List<int[]> ar)
+        static List<int[]> redundant2(List<int[]> ar, int len_input_arr)  //delete redundant vectors
         {
-            List<int[]> ar2 = new List<int[]>();
-            UInt64[][] decar = new UInt64[ar.Count][];
-
-            for (int y = 0; y<ar.Count; y++)
-            {
-                int lenght = Convert.ToInt32(Math.Ceiling(ar[0].Length / 64.0));
-                List<string> binstr = new List<string>();
-                for (int i=0; i < lenght; i ++)
-                {
-                    string stringToAdd = "";
-                    for (int j=0; j<64; j++)
-                    {
-                        int index = i * 64 + j;
-                        if (ar[y].Length > index &&  ar[y][index] != 0) { stringToAdd += "1"; }
-                                            else { stringToAdd += "0"; }
-                    }
-                    binstr.Add(stringToAdd);
-                }
-
-                UInt64[] decarToAdd = new UInt64[lenght];
-                for(int i=0; i<lenght; i++)
-                {
-                    decarToAdd[i] = Convert.ToUInt64(binstr[i], 2);
-                }
-                decar[y] = decarToAdd;
-            }
-
-            for (int j=0; j < ar.Count; j++)
-            {
-                bool r = true;
-                for (int k = 0; k < ar.Count; k++)
-                {
-                    if (j != k)
-                    {
-                        for (int n = 0; n<decar[j].Length && r==true; n++)
-                        {
-                            UInt64 an = decar[j][n] & decar[k][n];
-                            if (an == decar[k][n])
-                            {
-                                r = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (r)
-                {
-                    ar2.Add(ar[j]);
-                }
-            }
-            return ar2;
-        }
-
-        static List<int[]> redundant2(List<int[]> ar, int len_input_arr)
-        {
-            List<int[]> ar2 = new List<int[]>();
+            List<int[]> ar2 = new List<int[]>();  //for storing halfway solutions
             List<string> strings = new List<string>();
-            for (int j = 0; j < ar.Count; j++)
+            for (int j = 0; j < ar.Count; j++)  //searching for vectors with number of zero coordinates greater then number of vectors
             {
-                int zcounter = 0;
-                string s = "";
+                int zcounter = 0;  //number of zero coordinates in a single vector
+                string s = "";  //binary representation of vector
                 for (int i = 0; i < ar[j].Length; i++)
                 {
                     if (ar[j][i] == 0)
@@ -140,20 +86,48 @@ namespace Diophantine_sharp
                 if (zcounter > len_input_arr)
                 {
                     ar2.Add(ar[j]);
-                    strings.Add(s);
+                    strings.Add(s);  //saving binary representation for later
                 }
             }
             List<int[]> ar3 = new List<int[]>();
             List<string> strings2 = new List<string>();
             for (int j = 0; j < ar2.Count; j++)
             {
-                if (!strings2.Contains(strings[j]))
+                if (!strings2.Contains(strings[j]))  //eliminating vectors without unique bin. representation
                 {
                     ar3.Add(ar2[j]);
                     strings2.Add(strings[j]);
                 }
             }
-            return ar3;
+
+            //redundant with bool optimisation(old redundant)
+            UInt64[] decimal_ar = new UInt64[strings2.Count];
+            for (int i = 0; i < strings2.Count; i++)
+            {
+                decimal_ar[i] = Convert.ToUInt64(strings2[i], 2);  //translating binary representation to decimal
+            }
+            ar2.Clear();  //reusing ar2 to save memory
+            for (int j = 0; j < ar3.Count; j++)
+            {
+                bool r = true;  //do we need ar[j]
+                for (int k = 0; k < ar3.Count; k++)
+                {
+                    if (j != k)  //are these different vectors
+                    {
+                        UInt64 an = decimal_ar[j] & decimal_ar[k];  //AND between binary representations of vec
+                        if (an == decimal_ar[k]) //if [j] has 1's where [k] has 0's, e.g. [j] redundant to [k]
+                        {
+                            r = false;
+                            break;
+                        }
+                    }
+                }
+                if (r)
+                {
+                    ar2.Add(ar3[j]);
+                }
+            }
+            return ar2;
         }
 
         static List<int[]> simplify(List<int[]> ar)  //simplifying vectors of matrix
@@ -351,10 +325,7 @@ namespace Diophantine_sharp
                 Console.WriteLine(x2.Count); //length before elimination of redundant vectors
                 Console.WriteLine("start r2"); 
                 x2 = redundant2(x2, input_arr.Count);
-                Console.WriteLine(x2.Count);
-                Console.WriteLine("start r");
-                x2 = redundant(x2);
-                Console.WriteLine("finish r");
+                Console.WriteLine("finish r2");
                 Console.WriteLine(x2.Count);  //after elimination
                 x2 = simplify(x2);
                 x = x2;
